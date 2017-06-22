@@ -1,5 +1,7 @@
 package com.codepath.android.booksearch.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
 
 import org.json.JSONArray;
@@ -8,10 +10,36 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class Book {
+public class Book implements Parcelable {
     private String openLibraryId;
     private String author;
     private String title;
+    private String publish_year;
+    private Book mBook;
+
+    public Book() {
+    }
+
+
+    protected Book(Parcel in) {
+        openLibraryId = in.readString();
+        author = in.readString();
+        title = in.readString();
+        publish_year = in.readString();
+        mBook = in.readParcelable(Book.class.getClassLoader());
+    }
+
+    public static final Creator<Book> CREATOR = new Creator<Book>() {
+        @Override
+        public Book createFromParcel(Parcel in) {
+            return new Book(in);
+        }
+
+        @Override
+        public Book[] newArray(int size) {
+            return new Book[size];
+        }
+    };
 
     public String getOpenLibraryId() {
         return openLibraryId;
@@ -23,6 +51,10 @@ public class Book {
 
     public String getAuthor() {
         return author;
+    }
+
+    public String getPublish_year() {
+        return publish_year;
     }
 
     // Get book cover from covers API
@@ -44,6 +76,7 @@ public class Book {
             }
             book.title = jsonObject.has("title_suggest") ? jsonObject.getString("title_suggest") : "";
             book.author = getAuthor(jsonObject);
+            book.publish_year = getYears(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
@@ -62,6 +95,21 @@ public class Book {
                 authorStrings[i] = authors.getString(i);
             }
             return TextUtils.join(", ", authorStrings);
+        } catch (JSONException e) {
+            return "";
+        }
+    }
+
+    // Return comma separated author list when there is more than one author
+    private static String getYears(final JSONObject jsonObject) {
+        try {
+            final JSONArray years = jsonObject.getJSONArray("publish_year");
+            int numYears = years.length();
+            final String[] yearStrings = new String[numYears];
+            for (int i = 0; i < numYears; ++i) {
+                yearStrings[i] = years.getString(i);
+            }
+            return TextUtils.join(", ", yearStrings);
         } catch (JSONException e) {
             return "";
         }
@@ -86,5 +134,19 @@ public class Book {
             }
         }
         return books;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(openLibraryId);
+        dest.writeString(author);
+        dest.writeString(title);
+        dest.writeString(publish_year);
+        dest.writeParcelable(mBook, flags);
     }
 }

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 public class BookAdapter extends ArrayAdapter<Book> {
     // View lookup cache
     private static class ViewHolder {
+
         public ImageView ivCover;
         public TextView tvTitle;
         public TextView tvAuthor;
