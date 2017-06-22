@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import com.codepath.android.booksearch.R;
 import com.codepath.android.booksearch.adapters.BookAdapter;
@@ -33,6 +34,9 @@ public class BookListActivity extends AppCompatActivity {
     private ListView lvBooks;
     private BookAdapter bookAdapter;
     private BookClient client;
+
+    @BindView(R.id.pbProgressAction)
+    ProgressBar pbProgressAction;
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -68,10 +72,14 @@ public class BookListActivity extends AppCompatActivity {
     // Executes an API call to the OpenLibrary search endpoint, parses the results
     // Converts them into an array of book objects and adds them to the adapter
     private void fetchBooks(String query) {
+        lvBooks.setVisibility(View.INVISIBLE);
+        pbProgressAction.setVisibility(View.VISIBLE);
         client = new BookClient();
         client.getBooks(query, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                lvBooks.setVisibility(View.VISIBLE);
+                pbProgressAction.setVisibility(View.INVISIBLE);
                 try {
                     JSONArray docs;
                     if(response != null) {
