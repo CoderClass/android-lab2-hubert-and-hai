@@ -1,7 +1,10 @@
 package com.codepath.android.booksearch.activities;
 
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
@@ -18,6 +21,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import cz.msebera.android.httpclient.Header;
 
 
@@ -26,10 +31,16 @@ public class BookListActivity extends AppCompatActivity {
     private BookAdapter bookAdapter;
     private BookClient client;
 
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_list);
+        ButterKnife.bind(this);
+
+        setSupportActionBar(toolbar);
         lvBooks = (ListView) findViewById(R.id.lvBooks);
         ArrayList<Book> aBooks = new ArrayList<>();
         // initialize the adapter
@@ -37,7 +48,8 @@ public class BookListActivity extends AppCompatActivity {
         // attach the adapter to the ListView
         lvBooks.setAdapter(bookAdapter);
         // Fetch the data remotely
-        fetchBooks("Oscar Wilde");
+       // fetchBooks("Oscar Wilde");
+
     }
 
     // Executes an API call to the OpenLibrary search endpoint, parses the results
@@ -79,6 +91,24 @@ public class BookListActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_book_list, menu);
+
+        MenuItem menuItem = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(menuItem);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                searchView.clearFocus(); // Google thing
+                //bookAdapter.getFilter().filter(query);
+                fetchBooks(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
         return true;
     }
 
